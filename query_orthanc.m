@@ -1,9 +1,9 @@
-% Query an Orthanc server through REST API
-
-function query_orthanc(url, username, password)
 % QUERY_ORTHANC Run queries on an Orthanc REST API
 %
-% URL: Top-level URL in the form 'example.com'
+% Usage: query_orthanc(url, username, password)
+%   URL: Top-level URL in the form 'example.com'
+
+function query_orthanc(url, username, password)
 
 	options = weboptions('Username', username, 'Password', password);
 	topurl = strcat('https://', url, '/orthanc');
