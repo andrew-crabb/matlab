@@ -4,7 +4,7 @@
 %   study: JSON object received from Orthanc REST /studies/xxxx
   
 function summary = orthanc_summarize_study(study)
-	study.MainDicomTags;
+	% study.MainDicomTagss
 	institution_name = study.MainDicomTags.InstitutionName;
 	study_date       = study.MainDicomTags.StudyDate;
 	study_time       = study.MainDicomTags.StudyTime;

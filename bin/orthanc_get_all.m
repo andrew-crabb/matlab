@@ -5,14 +5,9 @@
 %   options: Matlab weboptions object of username, password
 %   path:    Path to add to url
 
-function objects = orthanc_get_all(url, options, urlpath, identifier)
-	top_url = strcat('https://', url, '/orthanc');
-	path_url = strcat(top_url, '/', urlpath);
-	% disp(path_url)
-	if nargin > 3
-    	path_url = strcat(path_url, '/', identifier);
-  	end
-  	% disp(path_url)
+function objects = orthanc_get_all(baseurl, options, path)
+	top_url = strcat('https://', baseurl, '/orthanc');
+	path_url = strcat(top_url, '/', path);
 
 	objects = webread(path_url, options);
 end
