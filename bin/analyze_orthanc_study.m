@@ -6,7 +6,7 @@
 % Orthanc API reference: http://bit.ly/2usHQj6
 
 function analyze_orthanc_study(url, username, password)
-	options = weboptions('Username', username, 'Password', password, 'Timeout', 30);
+	options = weboptions('Username', username, 'Password', password, 'Timeout', 90);
 	studies  = orthanc_get_all(url, options, 'studies');
 	patients = orthanc_get_all(url, options, 'patients');
 
@@ -15,25 +15,35 @@ function analyze_orthanc_study(url, username, password)
 
 
 	num_studies = numel(studies);
-	for n = 1:3
+	for n = 1:num_studies
 		study_id = studies{n};
 		study_url = strjoin({'studies', study_id}, '/');
 		study = orthanc_get_all(url, options, study_url);
+		% shared_tags_url = strjoin({'studies', study_id, 'shared-tags'}, '/');
+		% shared_tags = orthanc_get_all(url, options, shared_tags_url);
+		% disp(shared_tags);
+		% exit;
+		% disp(study);
 		summary = orthanc_summarize_study(study);
 		% disp(summary);
 		archive_dir = make_archive_dir(study);
+		nstr = sprintf("%3d: ", n);
 		if dir_exists(archive_dir)
-			disp(['Skipping ', archive_dir])
+			disp(['Skipping ', char(nstr), archive_dir])
 		else
-			disp(['Creating    ', archive_dir])
+			disp(['Creating    ', char(nstr), archive_dir])
+			% continue
 			if mkdir(archive_dir) == 1
 				study_zip_file = strcat(study_id, '.zip');
 			 	full_zip_file = strjoin({archive_dir, study_zip_file}, '/');
 				study_archive_url = strjoin({study_url, 'archive'}, '/');
 			 	disp(['Downloading ', study_archive_url, ' to ', full_zip_file]);
 				study_contents = orthanc_get_all(url, options, study_archive_url);
+				disp(['zip file: ', full_zip_file]);
 				file_id = fopen(full_zip_file, 'w');
 				fwrite(file_id, study_contents);
+			else
+				disp(['Failed creating: ', archive_dir]);
 			end
 		end
 
@@ -68,11 +78,23 @@ function exists = dir_exists(indir)
 end
 
 function archive_dir = make_archive_dir(study)
-	institution_name = study.MainDicomTags.InstitutionName;
+	% if isfield(study.MainDicomTags, 'InstitutionName')
+	% 	institution_name = study.MainDicomTags.InstitutionName;
+	% else
+	% 	institution_name = 'unknown';
+	% end
+	institution_name = get_study_field(study, 'InstitutionName');
+
+	% institution_name = study.MainDicomTags.InstitutionName;
 	inst_name = institution_name(~isspace(institution_name));
+	% disp(['institution_name ', institution_name, ', inst_name ', inst_name])
 	study_date       = study.MainDicomTags.StudyDate;
 	study_time       = study.MainDicomTags.StudyTime;
 	date_time = strjoin({study_date, study_time}, '_');
-	study_description = study.MainDicomTags.StudyDescription;
-	archive_dir = strjoin({getenv('HOME'), 'data', 'aric', inst_name, date_time}, '/');
+	% study_description = study.MainDicomTags.StudyDescription;
+	study_description = get_study_field(study, 'StudyDescription');
+	% archive_dir = strjoin({getenv('HOME'), 'data', 'aric', inst_name, date_time}, '/');
+	% archive_dir = strjoin({'/Volumes', 'data', 'gottesman', inst_name, date_time}, '/');
+	archive_dir = strjoin({'/Volumes', 'data', 'human', 'g', 'GOTTESMAN_STUDY', inst_name, date_time}, '/');
+
 end
